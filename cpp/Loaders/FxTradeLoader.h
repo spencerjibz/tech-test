@@ -3,6 +3,7 @@
 
 #include "ITradeLoader.h"
 #include "../Models/FxTrade.h"
+#include "../Models/FxTradeList.h"
 #include <string>
 #include <vector>
 
@@ -13,6 +14,8 @@ private:
 public:
     // NOTE: These methods are only here to allow the solution to compile prior to the test being completed.
     std::vector<ITrade*> loadTrades() override;
+    FxTrade* createTradeFromLine(std::string line);
+    void loadTradesFromFile(std::string filename, FxTradeList& tradeList);
     std::string getDataFile() const override;
     void setDataFile(const std::string& file) override;
 };

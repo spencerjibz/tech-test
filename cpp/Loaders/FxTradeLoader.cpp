@@ -1,16 +1,108 @@
 #include "FxTradeLoader.h"
 #include <stdexcept>
+#include <fstream>
+#include <sstream>
+#include <optional>
+#include <ctime>
+#include <string>
+#include <chrono>
+#include <iomanip>
 
 // NOTE: These methods are only here to allow the solution to compile prior to the test being completed.
+std::vector<std::string> split(const std::string &s, const std::string &sep) {
+    std::vector<std::string> result;
+     // use two pointer, start and end, update each as we move
+    size_t start = 0, end = 0;
+
+    while ((end = s.find(sep, start)) != std::string::npos) {
+      // push the characters in between the start and position of the our delmiter
+        result.push_back(s.substr(start, end - start));
+       // use the delmiter's length account for variable length delimiter, (this would be ut8-characters)
+        start = end + sep.length();
+      
+    }
+    result.push_back(s.substr(start));
+    return result;
+}
 
 std::vector<ITrade*> FxTradeLoader::loadTrades() {
-    throw std::runtime_error("Not implemented");
+    FxTradeList tradeList;
+    loadTradesFromFile(dataFile_, tradeList);
+    
+    std::vector<ITrade*> result;
+    for (size_t i = 0; i < tradeList.size(); ++i) {
+        result.push_back(tradeList[i]);
+    }
+    return result;
 }
 
 std::string FxTradeLoader::getDataFile() const {
-    throw std::runtime_error("Not implemented");
+  return dataFile_;
+}
+
+FxTrade* FxTradeLoader::createTradeFromLine(std::string line) {
+    std::stringstream ss(line);
+    std::string item;
+    auto items = split(line,"¬" );
+    
+    if (items.size() < 8) {
+        throw std::runtime_error("Invalid line format");
+    }
+auto fxStr = items[0]; 
+std::optional<std::string> fxType = std::nullopt;
+
+if (fxStr == FxTrade::FxForwardTradeType) {
+    fxType = FxTrade::FxForwardTradeType;
+} 
+auto id = items[8];
+FxTrade* trade = fxType.has_value() 
+                   ? new FxTrade(id, fxType.value()) 
+                   : new FxTrade(id);
+    
+       std::tm tm = {};
+    std::istringstream dateStream(items[1]);
+    dateStream >> std::get_time(&tm, "%Y-%m-%d");
+    auto timePoint = std::chrono::system_clock::from_time_t(std::mktime(&tm));
+    trade->setTradeDate(timePoint);
+    std::istringstream dtStream(items[6]);
+    dtStream >> std::get_time(&tm, "%Y-%m-%d");
+    auto valueDate = std::chrono::system_clock::from_time_t(std::mktime(&tm));
+     trade-> setValueDate(valueDate);
+    auto sym = items[2] +  items[3];
+    trade->setInstrument(sym);
+    trade->setCounterparty(items[7]);
+    trade->setNotional(std::stod(items[4]));
+    trade->setRate(std::stod(items[5]));
+    
+    
+    return trade;
+}
+
+
+void FxTradeLoader::loadTradesFromFile(std::string filename, FxTradeList& tradeList) {
+   if (filename.empty()) {
+        throw std::invalid_argument("Filename cannot be null");
+  }
+    
+    std::ifstream stream(filename);
+    if (!stream.is_open()) {
+        throw std::runtime_error("Cannot open file: " + filename);
+    }
+    
+    int lineCount = 0;
+    std::string line;
+    while (std::getline(stream, line)) {
+ if (line.find("END") != std::string::npos) {
+      // skip the last line
+        continue;
+    }
+        if (lineCount > 1) {
+            tradeList.add(createTradeFromLine(line));
+        }
+        lineCount++;
+    }
 }
 
 void FxTradeLoader::setDataFile(const std::string& file) {
-    throw std::runtime_error("Not implemented");
+     dataFile_ = file;
 }
