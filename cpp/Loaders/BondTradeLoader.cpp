@@ -4,7 +4,16 @@
 #include <stdexcept>
 #include <ctime>
 #include <iomanip>
+#include <optional>
 #include <chrono>
+#include <algorithm>
+
+std::string trim(const std::string& str) {
+    auto start = std::find_if_not(str.begin(), str.end(), [](unsigned char c){ return std::isspace(c); });
+    auto end = std::find_if_not(str.rbegin(), str.rend(), [](unsigned char c){ return std::isspace(c); }).base();
+    if (start >= end) return ""; 
+    return std::string(start, end);
+}
 
 BondTrade* BondTradeLoader::createTradeFromLine(std::string line) {
     std::vector<std::string> items;
@@ -19,7 +28,15 @@ BondTrade* BondTradeLoader::createTradeFromLine(std::string line) {
         throw std::runtime_error("Invalid line format");
     }
     
-    BondTrade* trade = new BondTrade(items[6]);
+   auto bondStr = items[0];
+    std::optional<std::string> bondType = std::nullopt;
+     if (bondStr == BondTrade::CorpBondTradeType) bondType= BondTrade::CorpBondTradeType;
+    
+auto id = trim(items[6]);
+BondTrade* trade = bondType.has_value() 
+                   ? new BondTrade(id, bondType.value()) 
+                   : new BondTrade(id);
+     
     
     std::tm tm = {};
     std::istringstream dateStream(items[1]);
