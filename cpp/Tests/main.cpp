@@ -7,7 +7,6 @@
 #include "ScalarResultsTests.cpp"
 
 int main() {
-    TestRunner::runAll();
-    return 0;
+  TestRunner::runAll();
+  return 0;
 }
-

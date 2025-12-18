@@ -6,8 +6,7 @@
 
 class PricingEngineConfig : public std::vector<PricingEngineConfigItem> {
 public:
-    PricingEngineConfig() = default;
+  PricingEngineConfig() = default;
 };
 
 #endif // PRICINGENGINECONFIG_H
-

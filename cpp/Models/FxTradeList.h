@@ -5,8 +5,7 @@
 #include "TradeList.h"
 class FxTradeList : public TradeList {
 public:
-    FxTradeList() = default;
+  FxTradeList() = default;
 };
 
 #endif // FXTRADELIST_H
-
