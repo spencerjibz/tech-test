@@ -8,6 +8,7 @@
 #include <optional>
 #include <string>
 #include <iterator>
+#include <algorithm>
 
 class ScalarResults : public IScalarResultReceiver {
 public:
@@ -31,17 +32,42 @@ public:
         Iterator() = default;
 
         // Iterator must be constructable from ScalarResults parent
-        Iterator& operator++();
-        ScalarResult operator*() const;
-        bool operator!=(const Iterator& other) const;
+        Iterator(std::vector<std::string>::const_iterator iter, const ScalarResults* parent_class) : iter_(iter), parent_(parent_class) {}
+
+        Iterator& operator++() {
+         ++iter_;
+         return *this;
+    }
+        ScalarResult operator*() const {
+             auto opt = (*parent_)[*iter_];
+          return *opt;
+    }
+        bool operator!=(const Iterator& other) const {
+             return iter_ != other.iter_;
+    }
+private:
+        std::vector<std::string>::const_iterator iter_;
+        const ScalarResults* parent_ = nullptr;
     };
 
-    Iterator begin() const;
-    Iterator end() const;
+    Iterator begin() const {
+
+        for (auto &[tradeId, _]: results_) allcurrentIds_.push_back(tradeId); 
+        for (auto &[id, _]: errors_)  {
+           if (std::find(allcurrentIds_.begin(), allcurrentIds_.end(), id) == allcurrentIds_.end()) {
+             allcurrentIds_.push_back(id);
+      }
+    }
+        return Iterator(allcurrentIds_.cbegin(), this);
+  }
+    Iterator end() const {
+     return Iterator(allcurrentIds_.cend(), this);
+  }
 
 private:
     std::map<std::string, double> results_;
     std::map<std::string, std::string> errors_;
+    mutable std::vector<std::string> allcurrentIds_;
 };
 
 #endif // SCALARRESULTS_H

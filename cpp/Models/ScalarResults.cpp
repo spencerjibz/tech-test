@@ -36,22 +36,3 @@ void ScalarResults::addError(const std::string& tradeId, const std::string& erro
     errors_[tradeId] = error;
 }
 
-ScalarResults::Iterator& ScalarResults::Iterator::operator++() {
-    throw std::runtime_error("Iterator not implemented");
-}
-
-ScalarResult ScalarResults::Iterator::operator*() const {
-    throw std::runtime_error("Iterator not implemented");
-}
-
-bool ScalarResults::Iterator::operator!=(const Iterator& other) const {
-    throw std::runtime_error("Iterator not implemented");
-}
-
-ScalarResults::Iterator ScalarResults::begin() const {
-    throw std::runtime_error("Not implemented");
-}
-
-ScalarResults::Iterator ScalarResults::end() const {
-    throw std::runtime_error("Not implemented");
-}
